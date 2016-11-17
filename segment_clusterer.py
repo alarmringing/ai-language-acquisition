@@ -4,26 +4,19 @@ from scipy.io.wavfile import write
 import os,sys
 
 #feature extractor
-#def extract_features(x, fs):
-#    zcr = librosa.zero_crossings(x).sum()
-#    energy = scipy.linalg.norm(x)
-#    return [zcr, energy]
-
-#numpy.array
-#looping through each segmented file
-#for file in os.listdir("audio/output/self_recorded_files"):
-#    if file.startswith("eechunk"):
-        #print(file)
-        #for each segmented file
-#        x, fs = librosa.load("audio/output/self_recorded_files/" + file)
-
+def extract_features(x, fs):
+    zcr = librosa.zero_crossings(x).sum()
+    energy = scipy.linalg.norm(x)
+    return [zcr, energy]
 
 #These parameters are for testing.
 #inputpath should be audio/output/self_recorded_files
 #inputpathname should be eechunk
 #outputpath should be audio/clustered/self_recorded_files
 #outputpathname would be eecluster
+
 def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k):
+
     features = numpy.empty((0, 2))
     segments = list()
     #looping through each segmented file
@@ -57,11 +50,6 @@ def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k
     print ("Affinity propogation result: ", apLabels)
     '''
 
-
-
-#frame_sz = fs*0.090
-#features = numpy.array([extract_features(x[i:i+frame_sz], fs) for i in onset_samples])
-#print features.shape
     #combine files in cluster
     results = [list() for _ in range(k)]
     padding = 1000; #padding within breaks
