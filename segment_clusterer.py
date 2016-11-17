@@ -9,18 +9,23 @@ def extract_features(x, fs):
     energy = scipy.linalg.norm(x)
     return [zcr, energy]
 
-numpy.array
+
+features = numpy.empty((1, 2))
+
 #looping through each segmented file
 for file in os.listdir("audio/output/self_recorded_files"):
     if file.startswith("eechunk"):
-        #print(file)
         #for each segmented file
         x, fs = librosa.load("audio/output/self_recorded_files/" + file)
+        feature = extract_features(x,fs)
+        print("feature is ", feature)
+        features = numpy.vstack((features, feature))
+        print("After appending one line features is ", features)
 
+print features
 
-
-
-
+'''
+#syllable detection
 filename = 'audio/input/multisyllabic/multisyllabic_english_2.wav'
 x, fs = librosa.load(filename)
 
@@ -34,13 +39,10 @@ x_with_beeps = mir_eval.sonify.clicks(onset_times, fs, length=len(x))
 write("audio/output/multisyllabic_detection_english_2.wav", fs, x+x_with_beeps)
 
 
-
-
-
 frame_sz = fs*0.090
 features = numpy.array([extract_features(x[i:i+frame_sz], fs) for i in onset_samples])
 print features.shape
-
+'''
 
 
 def kmeans(vector, K, maxIters):
