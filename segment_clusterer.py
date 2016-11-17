@@ -18,11 +18,17 @@ for file in os.listdir("audio/output/self_recorded_files"):
         #for each segmented file
         x, fs = librosa.load("audio/output/self_recorded_files/" + file)
         feature = extract_features(x,fs)
-        print("feature is ", feature)
         features = numpy.vstack((features, feature))
-        print("After appending one line features is ", features)
 
-print features
+#scale features from -1 to 1
+min_max_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
+features_scaled = min_max_scaler.fit_transform(features)
+
+#PyPlot this
+
+plt.scatter(features_scaled[:,0], features_scaled[:,1])
+plt.xlabel('Zero Crossing Rate (scaled)')
+plt.ylabel('Spectral Centroid (scaled)')
 
 '''
 #syllable detection
