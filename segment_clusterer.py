@@ -1,7 +1,7 @@
 #from pydub import AudioSegment
 import numpy, scipy, matplotlib.pyplot as plt, sklearn, librosa, mir_eval, urllib
 from scipy.io.wavfile import write
-import os 
+import os,sys
 
 #feature extractor
 #def extract_features(x, fs):
@@ -18,79 +18,67 @@ import os
 #        x, fs = librosa.load("audio/output/self_recorded_files/" + file)
 
 
-filename = 'audio/input/multisyllabic/multisyllabic_eric.wav'
-x, fs = librosa.load(filename)
+#These parameters are for testing.
+#inputpath should be audio/output/self_recorded_files
+#inputpathname should be eechunk
+#outputpath should be audio/clustered/self_recorded_files
+#outputpathname would be eecluster
+def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k):
+    features = numpy.empty((0, 2))
+    segments = list()
+    #looping through each segmented file
+    for file in os.listdir(inputPath):
+        if file.startswith(inputPathName):
+            #for each segmented file
+            x, fs = librosa.load(inputPath + "/" + file)
+            feature = extract_features(x,fs)
+            features = numpy.vstack((features, feature))
+            segments.append(x)
 
-librosa.display.waveplot(x, fs)
+    #scale features from -1 to 1
+    min_max_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
+    features_scaled = min_max_scaler.fit_transform(features)
 
-onset_frames = librosa.onset.onset_detect(x, sr=fs, delta=0.15, wait=4)
-onset_times = librosa.frames_to_time(onset_frames, sr=fs)
+    #PyPlot this
+    plt.scatter(features_scaled[:,0], features_scaled[:,1])
+    plt.xlabel('Zero Crossing Rate (scaled)')
+    plt.ylabel('Spectral Centroid (scaled)')
+    plt.show()
 
-print onset_times
-onset_samples = librosa.frames_to_samples(onset_frames)
-librosa.output.times_csv('audio/output/multisyllabic_detection_eric_times.csv', onset_times)
-x_with_beeps = mir_eval.sonify.clicks(onset_times, fs, length=len(x))
-write("audio/output/multisyllabic_detection_eric.wav", fs, x+x_with_beeps)
+    #kmeans 
+    model = sklearn.cluster.KMeans(n_clusters = k)
+    kmeansLabels = model.fit_predict(features_scaled)
+    print ("Kmeans with k = ", k, " result: ", kmeansLabels)
 
-
+    '''
+    #affinity propogation
+    model = sklearn.cluster.AffinityPropagation()
+    apLabels = model.fit_predict(features_scaled)
+    print ("Affinity propogation result: ", apLabels)
+    '''
 
 
 
 #frame_sz = fs*0.090
 #features = numpy.array([extract_features(x[i:i+frame_sz], fs) for i in onset_samples])
 #print features.shape
+    #combine files in cluster
+    results = [list() for _ in range(k)]
+    padding = 1000; #padding within breaks
+    for i in range(features.shape[0]):
+        segment_to_attach = numpy.hstack(([0 for _ in range(padding)], segments[i]))
+        results[kmeansLabels[i]] = numpy.hstack((results[kmeansLabels[i]], segment_to_attach))
+
+    for i in range(k):
+        out_file = outputPath + "/" + outputFileName + str(i) + ".wav"
+        write(out_file, fs, results[i])
+
+
+####################
+#SCRIPT STARTS HERE#
+####################
+
+clusterAudioSegments("audio/output/self_recorded_files", "eechunk", "audio/clustered/self_recorded_files", "eecluster", 4)
 
 
 
-def kmeans(vector, K, maxIters):
-    '''
-    list: list of examples, each example is a string-to-double dict representing a sparse vector.
-    K: number of desired clusters. Assume that 0 < K <= |examples|.
-    maxIters: maximum number of iterations to run for (you should terminate early if the algorithm converges).
-    Return: (length K list of cluster centroids,
-            list of assignments, (i.e. if examples[i] belongs to centers[j], then assignments[i] = j)
-            final reconstruction loss)
-    '''
-    # BEGIN_YOUR_CODE (our solution is 32 lines of code, but don't worry if you deviate from this)
-    random.seed(32)
-    centroids = random.sample(vector, K) #these will be the initial random centroids 
-    centroidsNormSqr = [0 for i in range(K)] #normSqr of each centroid (memoed)
-    examplesNormSqr = [0 for i in range(len(examples))] #normSqr of each examples (memoed)
-    assignments = [0 for i in range(len(examples))]
-    finalLoss = 0
-
-    #calculate norm squared values for each examples
-    for i in range(len(examples)):
-        examplesNormSqr[i] = dotProduct(examples[i],examples[i])
-
-    for i in range(maxIters): 
-        for k in range(K): #compute normSqr
-            centroidsNormSqr[k] = dotProduct(centroids[k], centroids[k])
-        finalLoss = 0
-        groupCount = [0 for k in range(K)]
-        #assign each data to centroid
-        for j in range(len(examples)): 
-            minDist = float('inf')
-            minK = 0
-            for k in range(K):
-                thisDist = centroidsNormSqr[k] + examplesNormSqr[j] - 2*dotProduct(centroids[k], examples[j])
-                if minDist > thisDist:
-                    minDist = thisDist 
-                    minK = k
-            finalLoss += minDist 
-            assignments[j] = minK
-            groupCount[minK] += 1
-
-        #update centroids 
-        newCentroids = [dict() for k in range(K)]
-        for j in range(len(assignments)):
-            thisGroupNum = assignments[j]
-            increment(newCentroids[thisGroupNum], 1/float(groupCount[thisGroupNum]), examples[j])
-
-        #Check for early convergence
-        if newCentroids == centroids: 
-            break
-        else: 
-            centroids = newCentroids
-
-    return (centroids, assignments, finalLoss)
