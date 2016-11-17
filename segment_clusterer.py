@@ -66,7 +66,7 @@ def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k
 #SCRIPT STARTS HERE#
 ####################
 
-clusterAudioSegments("audio/output/self_recorded_files", "eechunk", "audio/clustered/self_recorded_files", "eecluster", 4)
+clusterAudioSegments("audio/output/self_recorded_files", "kkchunk", "audio/clustered/self_recorded_files", "kkcluster", 4)
 
 
 
