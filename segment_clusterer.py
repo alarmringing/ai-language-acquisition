@@ -4,42 +4,41 @@ from scipy.io.wavfile import write
 import os 
 
 #feature extractor
-def extract_features(x, fs):
-    zcr = librosa.zero_crossings(x).sum()
-    energy = scipy.linalg.norm(x)
-    return [zcr, energy]
+#def extract_features(x, fs):
+#    zcr = librosa.zero_crossings(x).sum()
+#    energy = scipy.linalg.norm(x)
+#    return [zcr, energy]
 
-numpy.array
+#numpy.array
 #looping through each segmented file
-for file in os.listdir("audio/output/self_recorded_files"):
-    if file.startswith("eechunk"):
+#for file in os.listdir("audio/output/self_recorded_files"):
+#    if file.startswith("eechunk"):
         #print(file)
         #for each segmented file
-        x, fs = librosa.load("audio/output/self_recorded_files/" + file)
+#        x, fs = librosa.load("audio/output/self_recorded_files/" + file)
 
 
-
-
-
-filename = 'audio/input/multisyllabic/multisyllabic_english_2.wav'
+filename = 'audio/input/multisyllabic/multisyllabic_eric.wav'
 x, fs = librosa.load(filename)
 
 librosa.display.waveplot(x, fs)
 
-onset_frames = librosa.onset.onset_detect(x, sr=fs, delta=0.08, wait=4)
+onset_frames = librosa.onset.onset_detect(x, sr=fs, delta=0.15, wait=4)
 onset_times = librosa.frames_to_time(onset_frames, sr=fs)
+
+print onset_times
 onset_samples = librosa.frames_to_samples(onset_frames)
-
+librosa.output.times_csv('audio/output/multisyllabic_detection_eric_times.csv', onset_times)
 x_with_beeps = mir_eval.sonify.clicks(onset_times, fs, length=len(x))
-write("audio/output/multisyllabic_detection_english_2.wav", fs, x+x_with_beeps)
+write("audio/output/multisyllabic_detection_eric.wav", fs, x+x_with_beeps)
 
 
 
 
 
-frame_sz = fs*0.090
-features = numpy.array([extract_features(x[i:i+frame_sz], fs) for i in onset_samples])
-print features.shape
+#frame_sz = fs*0.090
+#features = numpy.array([extract_features(x[i:i+frame_sz], fs) for i in onset_samples])
+#print features.shape
 
 
 
