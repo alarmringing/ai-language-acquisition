@@ -6,12 +6,12 @@ import tuple_counter
 import word_segmenter 
 
 inputPath = 'audio/input/multisyllabic'
-inputFileName = 'multisyllabic_english_2'
+inputFileName = 'multisyllabic_jihee_long'
 
 create_syllables.create_syllables(inputPath, inputFileName)
 syllables = splice_audio.splice_audio(inputPath, inputFileName)
-labels = mfcc_clusterer.clusterAudioSegments(syllables, "audio/clustered/syllables", "compcluster", 22050, 100) #k number is arbitrary for now
+labels = mfcc_clusterer.clusterAudioSegments(syllables, "audio/clustered/syllables", "multisyllabic_jihee_long_cluster", 22050, 12) #k number is arbitrary for now
 transProb = tuple_counter.tuple_counter(labels)
-words = word_segmenter.word_segmenter(syllables, labels, transProb, 0.1)
-wordClusters = mfcc_clusterer.clusterAudioSegments(words, "audio/clustered/words", "compcluster", 22050, 50)
-
+#tweak constant so that word_segmenter should generate roughly 80 words
+words = word_segmenter.word_segmenter(syllables, labels, transProb, 0.025)
+wordClusters = mfcc_clusterer.clusterAudioSegments(words, "audio/clustered/words", "multisyllabic_jihee_long_cluster", 22050, 6)

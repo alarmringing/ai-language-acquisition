@@ -15,6 +15,9 @@ def extract_features(x, fs):
 #outputpath should be audio/clustered/self_recorded_files
 #outputpathname would be eecluster
 
+#def getInputFiles(inputPath, inputPathName):
+    
+
 def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k):
 
     features = numpy.empty((0, 2))
@@ -39,7 +42,18 @@ def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k
     plt.show()
 
     #kmeans 
-    model = sklearn.cluster.KMeans(n_clusters = k)
+
+    data = numpy.random.rand(10, 3)
+    kmeans = sklearn.cluster.KMeans(n_clusters = 5).fit_predict(data)
+    print("Before scaling inertia is ", kmeans)
+
+    data = data + 5
+    kmeans = sklearn.cluster.KMeans(n_clusters = 5).fit_predict(data)
+    print("after scaling inertia is ", kmeans)
+
+
+
+    model = sklearn.cluster.AffinityPropagation()
     kmeansLabels = model.fit_predict(features_scaled)
     print ("Kmeans with k = ", k, " result: ", kmeansLabels)
 
@@ -66,7 +80,7 @@ def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k
 #SCRIPT STARTS HERE#
 ####################
 
-clusterAudioSegments("audio/output/self_recorded_files", "kkchunk", "audio/clustered/self_recorded_files", "kkcluster", 4)
+clusterAudioSegments("audio/input/self_recorded_syllables", "jh", "audio/clustered/self_recorded_syllables", "jhcluster", 3)
 
 
 
