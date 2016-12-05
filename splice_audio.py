@@ -1,4 +1,4 @@
-from pydub import AudioSegment
+==from pydub import AudioSegment
 
 def splice(audioFile, times):
 	audio = AudioSegment.from_wav(audioFile)
@@ -33,6 +33,8 @@ for i, syllable in enumerate (syllables):
 	print "exporting", out_file
 	syllable.export(out_file, format="wav")
 
+#return syllables as vector
+return syllables
 
 
 
