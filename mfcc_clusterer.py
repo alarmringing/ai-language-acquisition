@@ -6,14 +6,12 @@ from scikits.talkbox.features import mfcc
 import os,sys
 
 #feature extractor
-def extract_features(x, fs):
+def extract_features(x):
     ceps, mspec, spec = mfcc(x)
     num_ceps = len(ceps)
-    print num_ceps
     X = []
     X.append(numpy.mean(ceps[int(num_ceps / 10):int(num_ceps * 9 / 10)], axis=0))
     Vx = numpy.array(X)
-    print Vx
     return Vx
 
 
@@ -23,36 +21,29 @@ def extract_features(x, fs):
 #outputpath should be audio/clustered/self_recorded_files
 #outputpathname would be eecluster
 
-def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k):
+def clusterAudioSegments( syllables, outputPath, outputFileName, fs, k):
 
     features = numpy.empty((0, 13))
     segments = list()
     #looping through each segmented file
-    for file in os.listdir(inputPath):
-        if file.startswith(inputPathName):
-            #for each segmented file
-            x, fs = librosa.load(inputPath + "/" + file)
-            feature = extract_features(x,fs)
-            print feature.shape
-            print features.shape
-            print "hsahodashdasohasiuh"
-            features = numpy.vstack((features, feature))
-            segments.append(x)
+    for syllable in syllables:
+        feature = extract_features(syllable)
+        features = numpy.vstack((features, feature))
+        segments.append(syllable)
 
     #scale features from -1 to 1
     min_max_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
     features_scaled = min_max_scaler.fit_transform(features)
 
     #PyPlot this
-    plt.scatter(features_scaled[:,0], features_scaled[:,1])
-    plt.xlabel('Zero Crossing Rate (scaled)')
-    plt.ylabel('Spectral Centroid (scaled)')
-    plt.show()
+    #plt.scatter(features_scaled[:,0], features_scaled[:,1])
+    #plt.xlabel('Zero Crossing Rate (scaled)')
+    #plt.ylabel('Spectral Centroid (scaled)')
+    #plt.show()
 
     #kmeans 
     model = sklearn.cluster.KMeans(n_clusters = k)
     kmeansLabels = model.fit_predict(features_scaled)
-    print ("Kmeans with k = ", k, " result: ", kmeansLabels)
 
     '''
     #affinity propogation
@@ -63,7 +54,7 @@ def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k
 
     #combine files in cluster
     results = [list() for _ in range(k)]
-    padding = 1000; #padding within breaks
+    padding = 30000; #padding within breaks
     for i in range(features.shape[0]):
         segment_to_attach = numpy.hstack(([0 for _ in range(padding)], segments[i]))
         results[kmeansLabels[i]] = numpy.hstack((results[kmeansLabels[i]], segment_to_attach))
@@ -72,13 +63,12 @@ def clusterAudioSegments(inputPath, inputPathName, outputPath, outputFileName, k
         out_file = outputPath + "/" + outputFileName + str(i) + ".wav"
         write(out_file, fs, results[i])
 
+    return kmeansLabels
+
 
 ####################
 #SCRIPT STARTS HERE#
 ####################
 
 #clusterAudioSegments("audio/output/self_recorded_files", "kkchunk", "audio/clustered/self_recorded_files", "kkcluster", 4)
-clusterAudioSegments("audio/input/self_recorded_syllables", "ee", "audio/clustered/syllables", "eecluster", 4)
-
-
-
+#clusterAudioSegments("audio/input/self_recorded_syllables", "ee", "audio/clustered/syllables", "eecluster", 4)
