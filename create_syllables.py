@@ -1,21 +1,29 @@
 import numpy, scipy, matplotlib.pyplot as plt, sklearn, librosa, mir_eval, urllib
 from scipy.io.wavfile import write
+import os
 
+#given the right directory, detect syllable onsets using onset detection function and combine to one file
+def create_syllables(inputDir, inputPathName):
 
-def create_syllables(inputPath, inputFileName):
+	onset_times = list()
+	for filename in os.listdir(inputDir + "/" + inputPathName + "/"):
+		if filename.endswith(".wav"): #for each .wav file under right directory
+	    	
+			fullfile = inputDir + "/" + inputPathName + "/" + filename
+			x, fs = librosa.load(fullfile)
 
-	filename = inputPath + '/' + inputFileName + '.wav'
-	x, fs = librosa.load(filename)
+			librosa.display.waveplot(x, fs) 
 
-	librosa.display.waveplot(x, fs)
+			#use onset detection from librosa to detect them
+			onset_frames = librosa.onset.onset_detect(x, sr=fs, delta=0.15, wait=4)
+			this_onset_times = librosa.frames_to_time(onset_frames, sr=fs)
+			onset_times.append(this_onset_times)
 
-	onset_frames = librosa.onset.onset_detect(x, sr=fs, delta=0.15, wait=4)
-	onset_times = librosa.frames_to_time(onset_frames, sr=fs)
+			#DUMP FROM PRE-UCS
+			#onset_samples = librosa.frames_to_samples(onset_frames)
+			#librosa.output.times_csv('audio/output/onset_detection/' + inputFileName + '_times.csv', onset_times)
+			#x_with_beeps = mir_eval.sonify.clicks(this_onset_times, fs, length=len(x))
+			#write("audio/output/syllables/" + inputPathName + '/' + filename + "_with_beeps.wav", fs, x+x_with_beeps)
 
-	print onset_times
-	onset_samples = librosa.frames_to_samples(onset_frames)
-	librosa.output.times_csv('audio/output/onset_detection/' + inputFileName + '_times.csv', onset_times)
-	x_with_beeps = mir_eval.sonify.clicks(onset_times, fs, length=len(x))
-	write("audio/output/syllables/" + inputFileName + '/' + inputFileName + "_with_beeps.wav", fs, x+x_with_beeps)
-
-#'audio/input/multisyllabic/multisyllabic_eric.wav'
+	# Contains timing data (of when syllable begins / ends)
+	return onset_times 
