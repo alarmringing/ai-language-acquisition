@@ -5,6 +5,7 @@ import numpy
 #RETURN: a list of audio vectors, each element is a word 
 def word_segmenter(segments, segmentClusters, transProb, threshold):
 
+
 	temp = numpy.empty([0,])
 	words = list()
 	for i in range (len(segmentClusters)-1):
@@ -19,12 +20,3 @@ def word_segmenter(segments, segmentClusters, transProb, threshold):
 
 	print("Final count of words is ", len(words))
 	return words 
-
-
-
-	# for in in range of segmentClusters, add syllable i to the temp vector 
-		# if transProb[(i, i+1)] > threshold: continue 
-		# else,  add temp vector to final list, empty temp vector 
-
-	# return the final list 
-
