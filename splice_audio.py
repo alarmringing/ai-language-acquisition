@@ -1,5 +1,7 @@
 from pydub import AudioSegment
 import numpy, scipy, matplotlib.pyplot as plt, sklearn, librosa, mir_eval, urllib
+import os
+
 
 def splice(audioFile, times):
 	audio = AudioSegment.from_wav(audioFile)
@@ -25,24 +27,26 @@ def get_times(timeFile):
 			times.append(float(line.strip()))
 	return times
 
-def splice_audio(inputPath, inputFileName):
-	times = get_times("audio/output/onset_detection/" + inputFileName + "_times.csv")
-	print times
-	syllables = splice(inputPath + '/' + inputFileName + '.wav', times)
+def splice_audio(inputDir, inputPathName, onset_times):
+
+	index = 0
 	raw_syllables = list()
-	for i, syllable in enumerate (syllables):
-		out_file = "./audio/output/syllables/" + inputFileName + "/" + inputFileName + "{0}.wav".format(i)
-		print "exporting", out_file
-		syllable.export(out_file, format="wav")
-		x, fs = librosa.load(out_file)
-		raw_syllables.append(x)
+	#print times
+	for filename in os.listdir(inputDir + "/" + inputPathName + '/'):
+	    if filename.endswith(".wav"):
+
+		syllables = splice(inputDir + '/' + inputPathName + '/' + filename, onset_times[index])
+		
+		for i, syllable in enumerate (syllables):
+			out_file = "./audio/output/syllables/" + inputPathName + "/" + filename.rstrip('.wav') + "{0}.wav".format(i)
+			syllable.export(out_file, format="wav")
+			x, fs = librosa.load(out_file)
+			raw_syllables.append(x)
+
+		index += 1
 
 	#return syllables as vector
 	return raw_syllables
-
-#audio/input/multisyllabic
-#multisyllabic_eric
-
 
 
 
