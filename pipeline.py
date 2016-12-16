@@ -12,22 +12,28 @@ inputDir = 'audio/input/childrens_story'
 inputPathName = 'katie_chimney'
 
 #detect syllables
+print "Running onset detection..."
 onset_times = create_syllables.create_syllables(inputDir, inputPathName)
 
 #splice audio by syllable
+print "Splicing Audio File..."
 syllables = splice_audio.splice_audio(inputDir, inputPathName, onset_times)
 
-#cluster syllables 
+#cluster syllables
+print "Clustering syllables..." 
 labels, segResults = mfcc_clusterer.clusterAudioSegments(syllables, "audio/clustered/syllables", inputPathName, 22050, 12) #k number is arbitrary for now
 labelsTuple = tuple(labels.tolist())
 
 #create dictionary of costs, a.e. how often each syllable combination occurs
+print "Creating dictionary..."
 cost_dictionary = dictionary_builder.dictionary_builder(labelsTuple, 4)
 
 #run ucs based on the cost dictionary above, segment audio into appropriate parts
+print "Running ucs..."
 word_sequence = ucs_word_segmenter.segmentWord(labelsTuple, cost_dictionary, 4)
 
 # use ucs action data to re-build the final lexicon
+print "Building final lexicon..."
 lexicon = build_final_lexicon.build_final_lexicon(word_sequence)
 
 #referencing final lexicon, create example audio segments using randomly sampled syllable audio from each cluster
