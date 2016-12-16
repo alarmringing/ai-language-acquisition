@@ -15,7 +15,8 @@ def create_syllables(inputDir, inputPathName):
 			librosa.display.waveplot(x, fs) 
 
 			#use onset detection from librosa to detect them
-			onset_frames = librosa.onset.onset_detect(x, sr=fs, delta=0.15, wait=4)
+			o_env = librosa.onset.onset_strength(x, sr=fs, detrend = True)
+			onset_frames = librosa.onset.onset_detect(x, onset_envelope = o_env)
 			this_onset_times = librosa.frames_to_time(onset_frames, sr=fs)
 			onset_times.append(this_onset_times)
 
