@@ -39,6 +39,12 @@ def splice_audio(inputDir, inputPathName, onset_times):
 		
 		for i, syllable in enumerate (syllables):
 			out_file = "./audio/output/syllables/" + inputPathName + "/" + filename.rstrip('.wav') + "{0}.wav".format(i)
+			if not os.path.exists(os.path.dirname(out_file)):
+			    try:
+			        os.makedirs(os.path.dirname(out_file))
+			    except OSError as exc: # Guard against race condition
+			        if exc.errno != errno.EEXIST:
+			            raise
 			syllable.export(out_file, format="wav")
 			x, fs = librosa.load(out_file)
 			raw_syllables.append(x)

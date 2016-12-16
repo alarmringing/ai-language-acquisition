@@ -56,6 +56,12 @@ def clusterAudioSegments( syllables, outputPath, outputFileName, fs, k):
     # output clusters, mostly for debugging purposes
     for i in range(len(results)):
         out_file = outputPath + "/" + outputFileName + "/" + outputFileName + str(i) + ".wav"
+        if not os.path.exists(os.path.dirname(out_file)):
+                try:
+                    os.makedirs(os.path.dirname(out_file))
+                except OSError as exc: # Guard against race condition
+                    if exc.errno != errno.EEXIST:
+                        raise
         write(out_file, fs, results[i])
 
     return (labels, listOfResults)
